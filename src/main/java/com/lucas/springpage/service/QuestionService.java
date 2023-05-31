@@ -31,13 +31,18 @@ public class QuestionService {
             .answerList(question.getAnswerList())
             .createDate(question.getCreateDate()).build();
     }
+    public QuestionDto getQuestionDto(Long id) {
+        Question question = questionRepository.findById(id).orElseThrow(
+            () -> new DataNotFoundException(ErrorCode.NOT_FOUND, "해당 question ID가 없습니다.")
+        );
+        return questionToDto(question);
+    }
     public Question getQuestion(Long id) {
         Question question = questionRepository.findById(id).orElseThrow(
             () -> new DataNotFoundException(ErrorCode.NOT_FOUND, "해당 question ID가 없습니다.")
         );
         return question;
     }
-
     public void create(QuestionDto questionDto) {
         Question question = new Question();
         question.setSubject(questionDto.getSubject());

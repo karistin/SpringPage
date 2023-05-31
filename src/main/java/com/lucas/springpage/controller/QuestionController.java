@@ -1,5 +1,6 @@
 package com.lucas.springpage.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.springpage.domain.Question;
 import com.lucas.springpage.dto.AnswerDto;
 import com.lucas.springpage.dto.QuestionDto;
@@ -34,7 +35,7 @@ public class QuestionController {
 //    해당 id로 이동
     @RequestMapping("/detail/{id}")
     public String detail(Model model, @PathVariable("id") Long id) {
-        Question question = questionService.getQuestion(id);
+        QuestionDto question = questionService.getQuestionDto(id);
         model.addAttribute("question", question);
         model.addAttribute("answerDto", AnswerDto.builder().build());
         return "question_detail";
