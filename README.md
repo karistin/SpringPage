@@ -3,6 +3,7 @@
     https://wikidocs.net/book/7601     
 
 ## Spring 예제 만들기 
+- 페이징 및 스프링 시큐어리티 활용하기 
 - JPA + MYSQL
 - thymeleaf
 
