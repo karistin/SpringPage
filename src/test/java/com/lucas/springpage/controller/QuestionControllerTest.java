@@ -1,5 +1,6 @@
 package com.lucas.springpage.controller;
 
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -47,13 +48,14 @@ class QuestionControllerTest {
 
     @Test
     @DisplayName("질문 목록 API")
+//    todo : Remake
     void questionList() throws Exception {
         List<QuestionDto> questionDtoList = new ArrayList<>();
         questionDtoList.add(QuestionDto.builder()
             .subject("제목 입니다.")
             .content("내용 입니다.").build());
 
-        given(questionService.getList()).willReturn(questionDtoList);
+//        given(questionService.getList(1)).willReturn(new Page<QuestionDto> page);
 
         mockMvc.perform(get(BASE_URL + "/list"))
             .andExpect(status().isOk())

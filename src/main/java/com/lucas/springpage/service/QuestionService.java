@@ -6,9 +6,15 @@ import com.lucas.springpage.exception.DataNotFoundException;
 import com.lucas.springpage.exception.ErrorCode;
 import com.lucas.springpage.repository.QuestionRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,11 +23,12 @@ public class QuestionService {
 
     private final QuestionRepository questionRepository;
 
-    public List<QuestionDto> getList() {
-        return questionRepository.findAll().stream().map(
-            this::questionToDto
-        ).collect(Collectors.toList());
-    }
+//    will be not use
+//    public List<QuestionDto> getList() {
+//        return questionRepository.findAll().stream().map(
+//            this::questionToDto
+//        ).collect(Collectors.toList());
+//    }
 
     private QuestionDto questionToDto(Question question) {
         return QuestionDto.builder()
@@ -50,4 +57,16 @@ public class QuestionService {
         question.setCreateDate(LocalDateTime.now());
         questionRepository.save(question);
     }
+
+    public Page<QuestionDto> getList(int page) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc("createDate"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
+        Page<Question> all = questionRepository.findAll(pageable);
+        List<QuestionDto> questionDtos = questionRepository.findAll(pageable).stream()
+            .map(this::questionToDto)
+            .toList();
+        return new PageImpl<>(questionDtos);
+    }
+
 }

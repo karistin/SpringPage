@@ -8,6 +8,7 @@ import com.lucas.springpage.service.QuestionService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+//https://devlog-wjdrbs96.tistory.com/414
 @Controller
 @RequestMapping("/question")
 @RequiredArgsConstructor
@@ -26,9 +29,10 @@ public class QuestionController {
 
 //    전체 리스트 불러오기
     @RequestMapping("/list")
-    public String list(Model model) {
-        List<QuestionDto> questionList = questionService.getList();
-        model.addAttribute("questionList", questionList);
+    public String list(Model model, @RequestParam(value = "page", defaultValue = "0")int page) {
+        Page<QuestionDto> questionDtoPage = questionService.getList(page);
+        System.out.println(questionDtoPage.getTotalPages());
+        model.addAttribute("paging", questionDtoPage);
         return "question_list";
     }
 
