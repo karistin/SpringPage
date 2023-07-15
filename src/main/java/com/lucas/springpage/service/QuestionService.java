@@ -58,15 +58,11 @@ public class QuestionService {
         questionRepository.save(question);
     }
 
-    public Page<QuestionDto> getList(int page) {
+    public Page<Question> getList(int page) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("createDate"));
         Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
-        Page<Question> all = questionRepository.findAll(pageable);
-        List<QuestionDto> questionDtos = questionRepository.findAll(pageable).stream()
-            .map(this::questionToDto)
-            .toList();
-        return new PageImpl<>(questionDtos);
+        return questionRepository.findAll(pageable);
     }
 
 }
