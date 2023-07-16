@@ -34,4 +34,6 @@ public class Answer {
 //    부모 : 자식 관계
     @ManyToOne
     private Question question;
+
+    private LocalDateTime modifyDate;
 }

@@ -42,4 +42,6 @@ public class Question {
 //    mapping Answer.question , 동시에 같이 삭제
     @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
     private List<Answer> answerList;
+
+    private LocalDateTime modifyDate;
 }
