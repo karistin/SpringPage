@@ -23,6 +23,9 @@ public class Answer {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @ManyToOne
+    private SiteUser author;
+
     //    질문을 작성한 날짜
 //    create_date
     private LocalDateTime createDate;

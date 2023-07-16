@@ -1,6 +1,7 @@
 package com.lucas.springpage.dto;
 
 import com.lucas.springpage.domain.Answer;
+import com.lucas.springpage.domain.SiteUser;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -24,4 +25,6 @@ public class QuestionDto {
 
     private LocalDateTime createDate;
     private List<Answer> answerList;
+
+    private SiteUser author;
 }

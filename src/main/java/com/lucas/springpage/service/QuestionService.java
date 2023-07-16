@@ -1,6 +1,7 @@
 package com.lucas.springpage.service;
 
 import com.lucas.springpage.domain.Question;
+import com.lucas.springpage.domain.SiteUser;
 import com.lucas.springpage.dto.QuestionDto;
 import com.lucas.springpage.exception.DataNotFoundException;
 import com.lucas.springpage.exception.ErrorCode;
@@ -50,11 +51,12 @@ public class QuestionService {
         );
         return question;
     }
-    public void create(QuestionDto questionDto) {
+    public void create(QuestionDto questionDto, SiteUser siteUser) {
         Question question = new Question();
         question.setSubject(questionDto.getSubject());
         question.setContent(questionDto.getContent());
         question.setCreateDate(LocalDateTime.now());
+        question.setAuthor(siteUser);
         questionRepository.save(question);
     }
 
