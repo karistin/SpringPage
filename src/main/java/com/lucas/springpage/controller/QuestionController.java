@@ -49,6 +49,9 @@ public class QuestionController {
     @RequestMapping("/detail/{id}")
     public String detail(Model model, @PathVariable("id") Long id) {
         Question question = questionService.getQuestion(id);
+        // 조회수 증가
+        questionService.updateViewer(question);
+        
         model.addAttribute("question", question);
         // 질문 및 답변 표시
         model.addAttribute("answerDto", AnswerDto.builder().build());
@@ -121,5 +124,16 @@ public class QuestionController {
         }
         questionService.delete(question);
         return "redirect:/";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/vote/{id}")
+    public String questionVote(Principal principal, @PathVariable("id") Long id
+    , RedirectAttributes redirectAttributes) {
+        Question question = questionService.getQuestion(id);
+        SiteUser user = userService.getUser(principal.getName());
+        questionService.vote(question, user);
+        redirectAttributes.addAttribute("id", id);
+        return "redirect:/question/detail/{id}";
     }
 }

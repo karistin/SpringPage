@@ -74,9 +74,26 @@ public class QuestionService {
         questionRepository.save(question);
     }
 
+    public void updateViewer(Question question) {
+        // 조회수 업데이트
+        Long viewer = question.getViewer();
+        if (viewer != null) {
+            question.setViewer(++viewer);
+        } else {
+            //default value
+            question.setViewer(1L);
+        }
+        questionRepository.save(question);
+    }
     public void delete(Question question) {
         questionRepository.delete(question);
-
     }
+
+    public void vote(Question question, SiteUser siteUser) {
+        question.getVoter().add(siteUser);
+        questionRepository.save(question);
+    }
+
+
 
 }

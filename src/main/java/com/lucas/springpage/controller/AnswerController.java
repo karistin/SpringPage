@@ -36,27 +36,32 @@ public class AnswerController {
     private final UserService userService;
 
     // 답변 등록
+    // questionID
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/create/{id}")
-    public String createAnswer(Model model, @PathVariable("id") Long id,
+    @PostMapping("/create/{questionID}")
+    public String createAnswer(Model model, @PathVariable("questionID") Long questionID,
         @Valid @ModelAttribute AnswerDto answerDto, BindingResult bindingResult
-        , Principal principal) {
-        Question question = questionService.getQuestion(id);
+        , Principal principal, RedirectAttributes redirectAttributes) {
+        Question question = questionService.getQuestion(questionID);
         SiteUser user = userService.getUser(principal.getName());
         if (bindingResult.hasErrors()) {
             model.addAttribute("question", question);
             return "question_detail";
         }
-        answerService.create(question, answerDto.getContent(), user);
-        return String.format("redirect:/question/detail/%s", id);
+        Answer answer = answerService.create(question, answerDto.getContent(), user);
+        redirectAttributes.addAttribute("questionId", question.getId());
+        redirectAttributes.addAttribute("answerId", answer.getId());
+        return "redirect:/question/detail/{questionId}  #answer_{answerId}";
     }
 
     // 답변 가져와서 수정 페이지로
+    // answerId
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/modify/{id}")
-    public String answerModify(AnswerDto answerDto, @PathVariable("id") long id, Principal principal
+    @GetMapping("/modify/{answerId}")
+    public String answerModify(AnswerDto answerDto, @PathVariable("answerId") Long answerId,
+        Principal principal
         , Model model) {
-        Answer answer = answerService.getAnswer(id);
+        Answer answer = answerService.getAnswer(answerId);
         if (!answer.getAuthor().getUsername().equals(principal.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
@@ -66,32 +71,50 @@ public class AnswerController {
     }
 
     // 답변 수정하기
+    // answer ID
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/modify/{id}")
+    @PostMapping("/modify/{answerId}")
     public String answerModify(@Valid AnswerDto answerDto, Principal principal,
-        BindingResult bindingResult, @PathVariable("id") long id
+        BindingResult bindingResult, @PathVariable("answerId") Long answerId
         , RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "answer_form";
         }
-        Answer answer = answerService.getAnswer(id);
+        Answer answer = answerService.getAnswer(answerId);
         if (!answer.getAuthor().getUsername().equals(principal.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
         answerService.modify(answer, answerDto.getContent());
-        redirectAttributes.addAttribute("id", answer.getQuestion().getId());
-        return "redirect:/question/detail/{id}";
+        redirectAttributes.addAttribute("questionId", answer.getQuestion().getId());
+        redirectAttributes.addAttribute("answerId", answer.getId());
+        return "redirect:/question/detail/{questionId}#answer_{answerId}";
     }
 
+    // 삭제하기
+    // answerId
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/delete/{id}")
-    public String answerModify(@PathVariable("id") long id,
-        Principal principal) {
-        Answer answer = this.answerService.getAnswer(id);
+    @GetMapping("/delete/{answerId}")
+    public String answerModify(@PathVariable("answerId") Long answerId,
+        Principal principal, RedirectAttributes redirectAttributes) {
+        Answer answer = this.answerService.getAnswer(answerId);
         if (!answer.getAuthor().getUsername().equals(principal.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
         this.answerService.delete(answer);
-        return String.format("redirect:/question/detail/%s", answer.getQuestion().getId());
+        redirectAttributes.addAttribute("questionId", answer.getQuestion().getId());
+        return "redirect:/question/detail/{questionId}";
+    }
+
+    // 추천하기
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/vote/{answerId}")
+    public String answerVote(Principal principal, @PathVariable("answerId") Long answerId,
+        RedirectAttributes redirectAttributes) {
+        Answer answer = answerService.getAnswer(answerId);
+        SiteUser user = userService.getUser(principal.getName());
+        answerService.vote(answer, user);
+        redirectAttributes.addAttribute("questionId", answer.getQuestion().getId());
+        redirectAttributes.addAttribute("answerId", answer.getId());
+        return "redirect:/question/detail/{questionId}#answer_{answerId}";
     }
 }

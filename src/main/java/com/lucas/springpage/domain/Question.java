@@ -6,12 +6,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 
 @Data
 @Entity
@@ -44,4 +49,13 @@ public class Question {
     private List<Answer> answerList;
 
     private LocalDateTime modifyDate;
+
+    // 하나의 질문에 여러사람이 추천이 가능하다.
+    @ManyToMany
+    private Set<SiteUser> voter;
+
+    // 조회수
+    // 기본값 0
+    @Column(columnDefinition = "bigint(20) default 0")
+    private Long viewer;
 }
