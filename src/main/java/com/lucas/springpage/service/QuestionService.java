@@ -1,11 +1,18 @@
 package com.lucas.springpage.service;
 
+import com.lucas.springpage.domain.Answer;
 import com.lucas.springpage.domain.Question;
 import com.lucas.springpage.domain.SiteUser;
 import com.lucas.springpage.dto.QuestionDto;
 import com.lucas.springpage.exception.DataNotFoundException;
 import com.lucas.springpage.exception.ErrorCode;
 import com.lucas.springpage.repository.QuestionRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +23,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -60,11 +68,12 @@ public class QuestionService {
         questionRepository.save(question);
     }
 
-    public Page<Question> getList(int page) {
+    public Page<Question> getList(int page, String kw) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("createDate"));
         Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
-        return questionRepository.findAll(pageable);
+        Specification<Question> search = this.search(kw);
+        return questionRepository.findAll(search, pageable);
     }
 
     public void modify(Question question, String subject, String content) {
@@ -93,7 +102,43 @@ public class QuestionService {
         question.getVoter().add(siteUser);
         questionRepository.save(question);
     }
+/*
+    select
+    distinct q.id,
+    (...)
+    from question q
+    // 합집합(outer)으로
+    left outer join site_user u1 on **q.author_id=u1.id**
+    u1 : <질문 유저> left outer Join
+    left outer join answer a on q.id=a.question_id
+    a : <질문, 답글>
+    left outer join site_user u2 on a.author_id=u2.id
+    u2 : <답글, 유저>
+        where
+        // 스프링이 제목, 내용, 유저 이름 댓글, 댓글 유저
+    q.subject like '%스프링%'
+    or q.content like '%스프링%'
+    or u1.username like '%스프링%'
+    or a.content like '%스프링%'
+    or u2.username like '%스프링%'
+    */
+    private Specification<Question> search(String kw) {
+        return new Specification<Question>() {
+            @Override
+            public Predicate toPredicate(Root<Question> q, CriteriaQuery<?> query,
+                CriteriaBuilder cb) {
+                query.distinct(true); // sql distinct
+                Join<Question, SiteUser> u1 = q.join("author", JoinType.LEFT);
+                Join<Question, Answer> a = q.join("answerList", JoinType.LEFT);
+                Join<Answer, SiteUser> u2  = q.join("author", JoinType.LEFT);
 
-
+                return cb.or(cb.like(q.get("subject"), "%" + kw + "%"), // 제목
+                    cb.like(q.get("content"), "%" + kw + "%"),      // 내용
+                    cb.like(u1.get("username"), "%" + kw + "%"),    // 질문 작성자
+                    cb.like(a.get("content"), "%" + kw + "%"),      // 답변 내용
+                    cb.like(u2.get("username"), "%" + kw + "%"));   // 답변 작성자
+            }
+        };
+    }
 
 }

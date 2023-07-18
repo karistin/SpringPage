@@ -39,9 +39,11 @@ public class QuestionController {
 
     //    전체 리스트 불러오기
     @GetMapping("/list")
-    public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page) {
-        Page<Question> questionDtoPage = questionService.getList(page);
+    public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page,
+        @RequestParam(value = "kw", defaultValue = "") String kw) {
+        Page<Question> questionDtoPage = questionService.getList(page, kw);
         model.addAttribute("paging", questionDtoPage);
+        model.addAttribute("kw", kw);
         return "question_list";
     }
 
